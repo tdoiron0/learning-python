@@ -1,0 +1,5 @@
+file = open("FileIO/myfile.txt", "w")
+file.write("Hello world!\n")
+file.write("...\n")
+file.write("Bye!")
+file.close()
