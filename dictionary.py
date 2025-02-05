@@ -11,5 +11,7 @@ locations = {"food": (33.773728072939456, -84.39816428963466),
 dict = {"Foo": "Bar",
          "Up": "Down"}
 
-for it in dict:
-    print("a" in dict[it])
+# for it in dict:
+#     print("a" in dict[it])
+
+print("food" in locations)
