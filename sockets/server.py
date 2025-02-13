@@ -6,7 +6,7 @@ THREADS_STOP = threading.Event()
 host = '127.0.0.1'  # Default server IP address **Might not need** 
 port = 60000          # Default port used by the server
 clients: list[tuple[str, socket.socket]] = []
-data_buffer: list[str] = []
+data_buffer: list[tuple[str, list[str]]] = []
 
 def setup() -> socket.socket:
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -32,6 +32,7 @@ def client_listener(server_socket: socket.socket):
         print(f"Warning: {e}")
 
 def data_listener():
+    threads: list[threading.Thread] = []
     while not THREADS_STOP.is_set():
         for name, socket in clients:
             data = socket.recv(1024)
@@ -40,7 +41,20 @@ def data_listener():
                 socket.close()
                 clients.remove((name, socket))
             else:
-                print(f"{name}: {data.decode('utf-8')}")
+                threads.append(threading.Thread(target=handle_data, args=(name, data)))
+                threads[-1].start()
+    for thread in threads:
+        thread.join()
+
+def handle_data(name: str, data: str):
+    data_parsed = data.split(",")
+    if data_parsed[0] == "MESSAGE":
+        handle_message(name, data_parsed[2])
+
+def handle_message(name: str, msg: str): 
+    for client, socket in clients:
+        if client != name:
+            socket.sendall(f"MESSAGE,{name},{msg}")
 
 def main():
     server_socket = setup()
